@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高画質 手書き漢字検索 (ハイブリッド版)</title>
+    <title>手書き漢字検索</title>
     <!-- Google Fonts: Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,11 +29,6 @@
             --accent-hover: #1557b0;
             --ink-color: #202124;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
-            --ai-bg: #f0f7ff;
-            --ai-border: #cce0ff;
-            --spinner-color: #1a73e8;
-            --toggle-bg: #e0e0e0;
-            --toggle-active: #1a73e8;
         }
 
         /* Dark Mode */
@@ -49,11 +44,6 @@
                 --accent-hover: #6ba5ed;
                 --ink-color: #ffffff;
                 --shadow: 0 4px 6px rgba(0,0,0,0.5);
-                --ai-bg: #1a2433;
-                --ai-border: #2c3e50;
-                --spinner-color: #8ab4f8;
-                --toggle-bg: #444;
-                --toggle-active: #8ab4f8;
             }
         }
 
@@ -87,40 +77,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        /* Mode Switcher */
-        .mode-switcher {
-            display: flex;
-            background-color: var(--toggle-bg);
-            border-radius: 20px;
-            padding: 4px;
-            margin-bottom: 15px;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .mode-btn {
-            flex: 1;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 16px;
-            background: transparent;
-            color: var(--secondary-text);
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .mode-btn.active {
-            background-color: var(--card-bg);
-            color: var(--accent-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        @media (prefers-color-scheme: dark) {
-             .mode-btn.active { color: var(--text-color); background-color: #333; }
         }
 
         /* Canvas Area */
@@ -209,7 +165,6 @@
             gap: 8px;
             justify-content: flex-start;
             margin-bottom: 20px;
-            padding-bottom: 20px;
             border-bottom: 1px solid var(--border-color);
         }
 
@@ -247,62 +202,9 @@
             width: 100%;
             height: 40px;
         }
-
-        /* AI Explanation Area */
-        #ai-section {
-            width: 100%;
-            display: none;
-            flex-direction: column;
-        }
-
-        .ai-box {
-            background-color: var(--ai-bg);
-            border: 1px solid var(--ai-border);
-            border-radius: 8px;
-            padding: 1.5rem;
-            position: relative;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        .ai-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--accent-color);
-        }
-
-        .ai-content {
-            font-size: 0.95rem;
-            white-space: pre-wrap;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Spinner */
-        .loading-spinner {
-            width: 24px;
-            height: 24px;
-            animation: rotate 1s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .loading-spinner .path {
-            stroke: var(--spinner-color);
-            stroke-linecap: round;
-            stroke-dasharray: 89 150;
-            stroke-dashoffset: 0;
-        }
-        @keyframes rotate {
-            100% { transform: rotate(360deg); }
-        }
         
         .footer {
-            margin-top: 30px;
+            margin-top: 20px;
             font-size: 0.8rem;
             color: var(--secondary-text);
             text-align: center;
@@ -314,12 +216,6 @@
     <h1>手書き漢字検索</h1>
 
     <div class="container">
-        <!-- Mode Switcher -->
-        <div class="mode-switcher">
-            <button class="mode-btn active" id="mode-google" onclick="setMode('google')">Google (高速)</button>
-            <button class="mode-btn" id="mode-ai" onclick="setMode('ai')">AI (Gemini)</button>
-        </div>
-
         <div class="canvas-wrapper">
             <canvas id="drawingCanvas"></canvas>
         </div>
@@ -327,7 +223,6 @@
         <div class="controls">
             <button class="control-btn" onclick="undo()">戻る</button>
             <button class="control-btn primary" onclick="clearCanvas()">クリア</button>
-            <button class="control-btn primary" id="ai-search-btn" onclick="recognizeWithAI()" style="display: none;">認識実行</button>
         </div>
 
         <div class="results-label">
@@ -337,62 +232,35 @@
         <div class="results" id="resultsContainer">
             <div class="placeholder">ここに描画してください</div>
         </div>
-
-        <!-- AI Section -->
-        <div id="ai-section">
-            <div class="ai-box">
-                <div class="ai-header">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stars" viewBox="0 0 16 16"><path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828zM3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31zM10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/></svg>
-                    <span id="ai-title">AI 解説</span>
-                </div>
-                <div id="ai-content" class="ai-content"></div>
-            </div>
-        </div>
     </div>
 
     <div class="footer">
-        Powered by Google Input Tools & Gemini 2.5 Flash
+        Powered by Google Input Tools
     </div>
 
     <script>
-        // --- Config ---
-        const WORKER_URL = 'https://math-solver-proxy.nden14800.workers.dev';
-
         // --- State ---
-        let currentMode = 'google'; // 'google' or 'ai'
         let isDrawing = false;
         let strokes = []; // [[x[], y[]], ...]
         let currentStrokeX = [];
         let currentStrokeY = [];
-        let aiDebounceTimer = null;
 
         // --- Elements ---
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
         const resultsContainer = document.getElementById('resultsContainer');
-        const aiSection = document.getElementById('ai-section');
-        const aiContent = document.getElementById('ai-content');
-        const aiTitle = document.getElementById('ai-title');
         const statusIndicator = document.getElementById('status-indicator');
-        const aiSearchBtn = document.getElementById('ai-search-btn');
-
-        const modeBtnGoogle = document.getElementById('mode-google');
-        const modeBtnAi = document.getElementById('mode-ai');
-
-        // Loading SVG
-        const loadingSpinnerHTML = `<svg class="loading-spinner" viewBox="0 0 50 50"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="3"></circle></svg>`;
 
         // --- High-Resolution Canvas Setup ---
         function setupCanvas() {
             const dpr = window.devicePixelRatio || 1;
-            // CSS dimensions
             const rect = canvas.getBoundingClientRect();
             
-            // Set actual size in memory (scaled to account for extra pixel density)
+            // Set actual size in memory (scaled)
             canvas.width = rect.width * dpr;
             canvas.height = rect.height * dpr;
             
-            // Normalize coordinate system to use css pixels
+            // Normalize coordinate system to CSS pixels
             ctx.scale(dpr, dpr);
             
             // Drawing Settings
@@ -404,7 +272,6 @@
 
         // Initial setup and reset on resize
         setupCanvas();
-        // Note: Resetting on resize clears canvas, which is standard behavior
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
@@ -424,21 +291,6 @@
 
         function updateInkColor() {
             ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--ink-color').trim();
-        }
-
-        function setMode(mode) {
-            currentMode = mode;
-            modeBtnGoogle.classList.toggle('active', mode === 'google');
-            modeBtnAi.classList.toggle('active', mode === 'ai');
-            
-            if (mode === 'ai') {
-                aiSearchBtn.style.display = 'block';
-                resultsContainer.innerHTML = '<div class="placeholder">描画して「認識実行」を押してください</div>';
-            } else {
-                aiSearchBtn.style.display = 'none';
-                aiSection.style.display = 'none'; // Hide AI section when switching to Google
-                if (strokes.length > 0) recognizeWithGoogle();
-            }
         }
 
         // --- Canvas Events ---
@@ -478,14 +330,8 @@
         function draw(e) {
             if (!isDrawing) return;
             const pos = getPos(e);
-            
-            // Add point
             currentStrokeX.push(pos.x);
             currentStrokeY.push(pos.y);
-
-            // Simple smoothing (connect to new point)
-            // For even better smoothing we could use quadratic curves, 
-            // but for high-res canvas simple lineTo with high DPI is usually sufficient and responsive.
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
         }
@@ -497,24 +343,18 @@
 
             if (currentStrokeX.length > 0) {
                 strokes.push([currentStrokeX, currentStrokeY]);
-                
-                if (currentMode === 'google') {
-                    recognizeWithGoogle();
-                } else {
-                    // AI mode: wait for user button or timeout
-                    clearTimeout(aiDebounceTimer);
-                    aiDebounceTimer = setTimeout(recognizeWithAI, 1500);
-                }
+                recognizeCharacter();
             }
         }
 
         function stopDrawing() { if (isDrawing) endDraw(); }
 
         function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Internal size cleared by full rect
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            ctx.clearRect(0, 0, rect.width * dpr, rect.height * dpr);
             strokes = [];
             resultsContainer.innerHTML = '<div class="placeholder">ここに描画してください</div>';
-            aiSection.style.display = 'none';
             statusIndicator.style.display = 'none';
         }
 
@@ -523,18 +363,17 @@
             strokes.pop();
             drawAllStrokes();
             if (strokes.length > 0) {
-                if (currentMode === 'google') recognizeWithGoogle();
+                recognizeCharacter();
             } else {
                 resultsContainer.innerHTML = '<div class="placeholder">ここに描画してください</div>';
-                aiSection.style.display = 'none';
+                statusIndicator.style.display = 'none';
             }
         }
 
         function drawAllStrokes() {
-            // Use canvas.width/height for clearing the backing store
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
-            ctx.clearRect(0, 0, rect.width * dpr, rect.height * dpr); // Clear physical pixels
+            ctx.clearRect(0, 0, rect.width * dpr, rect.height * dpr);
             
             updateInkColor();
             ctx.lineWidth = 6;
@@ -552,13 +391,12 @@
         }
 
         // --- Google API Recognition ---
-        async function recognizeWithGoogle() {
+        async function recognizeCharacter() {
             if (strokes.length === 0) return;
             statusIndicator.textContent = "Google 認識中...";
             statusIndicator.style.display = 'block';
 
-            // API sends normalized strokes, but coordinate system is relative to canvas size.
-            // The API handles any coordinate scale, but consistency helps.
+            // Prepare ink data
             const inkData = strokes.map(stroke => [stroke[0], stroke[1], []]);
             
             const data = {
@@ -581,71 +419,25 @@
                 const result = await response.json();
                 if (result[0] === 'SUCCESS') {
                     const candidates = result[1][0][1];
+                    // Filter for Kanji only (Unicode: 4E00-9FFF)
                     const kanjiOnly = candidates.filter(char => /^[\u4E00-\u9FFF]$/.test(char));
                     displayResults(kanjiOnly);
                 }
-            } catch (e) { console.error(e); }
-            statusIndicator.style.display = 'none';
-        }
-
-        // --- AI (Gemini) Recognition ---
-        async function recognizeWithAI() {
-            if (strokes.length === 0) return;
-            clearTimeout(aiDebounceTimer);
-            
-            statusIndicator.textContent = "AI思考中...";
-            statusIndicator.style.display = 'block';
-            resultsContainer.innerHTML = `<div class="placeholder">${loadingSpinnerHTML} AIが画像を解析中...</div>`;
-
-            // SVG Path Generation
-            let svgPath = "";
-            strokes.forEach(stroke => {
-                const [xs, ys] = stroke;
-                if (xs.length === 0) return;
-                svgPath += `M ${Math.round(xs[0])} ${Math.round(ys[0])} `;
-                for(let i=1; i<xs.length; i++) {
-                    svgPath += `L ${Math.round(xs[i])} ${Math.round(ys[i])} `;
-                }
-            });
-
-            const prompt = `
-あなたは手書き文字認識エンジンです。
-以下のテキストは、300x300のキャンバス上に描かれたSVGパスデータです。
-この筆跡が表している漢字を一文字推測してください。
-可能性が高い順に漢字のみを5つ、カンマ区切りで出力してください。余計な文章は不要です。
-例: 漢,字,書,筆,学
-
-SVG Path Data:
-${svgPath}
-`;
-
-            try {
-                const responseText = await callApi(prompt);
-                const candidates = responseText
-                    .replace(/、/g, ',')
-                    .split(',')
-                    .map(s => s.trim())
-                    .filter(s => s && /^[\u4E00-\u9FFF]$/.test(s));
-
-                if (candidates.length > 0) {
-                    displayResults(candidates);
-                } else {
-                    resultsContainer.innerHTML = '<div class="placeholder">漢字を認識できませんでした</div>';
-                }
-            } catch (error) {
-                resultsContainer.innerHTML = '<div class="placeholder">AIエラー</div>';
-                console.error(error);
+            } catch (e) { 
+                console.error(e);
+                resultsContainer.innerHTML = '<div class="placeholder">エラーが発生しました</div>';
             }
             statusIndicator.style.display = 'none';
         }
 
-        // --- Common Results Display ---
         function displayResults(candidates) {
             resultsContainer.innerHTML = '';
             if (candidates.length === 0) {
                 resultsContainer.innerHTML = '<div class="placeholder">候補なし</div>';
                 return;
             }
+            
+            // Remove duplicates
             const unique = [...new Set(candidates)];
             
             unique.forEach(char => {
@@ -654,56 +446,11 @@ ${svgPath}
                 div.textContent = char;
                 div.onclick = () => {
                     navigator.clipboard.writeText(char).then(() => {
-                        // Just show alert for copy
                         alert(`「${char}」をコピーしました`);
                     });
-                    
-                    // Only trigger AI explanation if in AI mode
-                    if (currentMode === 'ai') {
-                        askAI(char);
-                    }
                 };
                 resultsContainer.appendChild(div);
             });
-        }
-
-        // --- AI Wrapper ---
-        async function callApi(prompt) {
-            try {
-                const response = await fetch(WORKER_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ prompt: prompt }) 
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || `Status: ${response.status}`);
-                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text) return text;
-                throw new Error('AI response empty');
-            } catch (error) { 
-                console.error('Worker API Error:', error); 
-                throw error;
-            }
-        }
-
-        // --- AI Explanation ---
-        async function askAI(char) {
-            aiSection.style.display = 'flex';
-            aiTitle.textContent = `「${char}」の解説`;
-            aiContent.innerHTML = `情報を取得中... ${loadingSpinnerHTML}`;
-            aiSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-            const prompt = `漢字「${char}」について以下の情報を日本語で簡潔に教えてください。
-1. 音読みと訓読み
-2. 意味
-3. 一般的な熟語や使用例（3つ程度）`;
-
-            try {
-                const answer = await callApi(prompt);
-                aiContent.innerHTML = answer.replace(/\n/g, '<br>');
-            } catch (e) {
-                aiContent.innerHTML = "解説の取得に失敗しました。";
-            }
         }
     </script>
 </body>
